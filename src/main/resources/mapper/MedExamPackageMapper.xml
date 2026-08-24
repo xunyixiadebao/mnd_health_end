@@ -3,5 +3,182 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.example.djiankang.db.mapper.MedExamPackageMapper">
+    <select id="selectPageCount" resultType="java.lang.Long">
+        select
+        count(*)
+        from
+        med_exam_package ep
+        <where>
+            <if test="packageName != null and packageName != ''">
+                and ep.package_name like concat('%', #{packageName}, '%')
+            </if>
+            <if test="packageCode != null and packageCode != ''">
+                and ep.package_code = #{packageCode}
+            </if>
+            <if test="packageType != null">
+                and ep.package_type = #{packageType}
+            </if>
+            <if test="categoryId != null">
+                and ep.category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and ep.status = #{status}
+            </if>
+        </where>
+    </select>
+    <select id="selectPageList" resultType="java.util.Map">
+        select
+        ep.id,
+        ep.package_name as packageName,
+        ep.package_code as packageCode,
+        ep.original_price as originalPrice,
+        ep.current_price as currentPrice,
+        ep.sales_volume as salesVolume,
+        ep.package_type as packageType,
+        pr.rule_name as ruleName,
+        (ep.exam_items is not null) as hasDocument,
+        ep.status,
+        ep.category_id as categoryId
+        from
+        med_exam_package ep
+        left join
+        promotion_rule pr
+        on
+        ep.promotion_id = pr.rule_id
+        <where>
+            <if test="packageName != null and packageName != ''">
+                and ep.package_name like concat('%', #{packageName}, '%')
+            </if>
+            <if test="packageCode != null and packageCode != ''">
+                and ep.package_code = #{packageCode}
+            </if>
+            <if test="packageType != null">
+                and ep.package_type = #{packageType}
+            </if>
+            <if test="categoryId != null">
+                and ep.category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and ep.status = #{status}
+            </if>
+        </where>
+        order by ep.id asc
+        limit #{startIndex}, #{pageSize}
+    </select>
+    <select id="selectByMd5Hash" resultType="MedExamPackageEntity">
+        SELECT id,
+               package_code    AS packageCode,
+               package_name    AS packageName,
+               description,
+               department_exam AS departmentExam,
+               lab_exam        AS labExam,
+               medical_exam    AS medicalExam,
+               other_exam      AS otherExam,
+               exam_items      AS examItems,
+               cover_image     AS coverImage,
+               original_price  AS originalPrice,
+               current_price   AS currentPrice,
+               sales_volume    AS salesVolume,
+               package_type    AS packageType,
+               tags,
+               category_id     AS categoryId,
+               promotion_id    AS promotionId,
+               status,
+               md5_hash        AS md5Hash,
+               update_time     AS updateTime,
+               create_time     AS createTime
+        FROM med_exam_package
+        WHERE md5_hash = #{md5Hash}
+        limit 1
+    </select>
 
+    <insert id="insert" parameterType="MedExamPackageEntity">
+        insert into med_exam_package
+        (package_code, package_name, description, department_exam, lab_exam, medical_exam, other_exam, cover_image,
+         original_price, current_price, sales_volume, package_type, tags, category_id, promotion_id, status, md5_hash)
+        values (#{packageCode}, #{packageName}, #{description}, #{departmentExam}, #{labExam}, #{medicalExam},
+                #{otherExam}, #{coverImage}, #{originalPrice}, #{currentPrice}, 0, #{packageType}, #{tags},
+                #{categoryId}, #{promotionId}, 0, #{md5Hash})
+    </insert>
+    <select id="selectById" resultType="Map">
+        SELECT
+        g.package_code AS packageCode,
+        g.package_name AS packageName,
+        g.description,
+        g.cover_image AS coverImage,
+        CAST(g.original_price AS CHAR) AS originalPrice,
+        CAST(g.current_price AS CHAR) AS currentPrice,
+        r.rule_id AS ruleId,
+        r.rule_name AS ruleName,
+        g.package_type AS packageType,
+        g.tags,
+        g.category_id AS categoryId,
+        g.department_exam AS departmentExam,
+        IFNULL(JSON_LENGTH(g.department_exam), 0) AS count_1,
+        g.lab_exam AS labExam,
+        IFNULL(JSON_LENGTH(g.lab_exam), 0) AS count_2,
+        g.medical_exam AS medicalExam,
+        IFNULL(JSON_LENGTH(g.medical_exam), 0) AS count_3,
+        g.other_exam AS otherExam,
+        IFNULL(JSON_LENGTH(g.other_exam), 0) AS count_4
+        FROM
+        med_exam_package g
+        LEFT JOIN
+        promotion_rule r
+        ON
+        g.promotion_id = r.rule_id
+        WHERE
+        g.id = #{id}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+    <update id="update">
+        UPDATE med_exam_package
+        SET package_name    = #{packageName},
+            package_code    = #{packageCode},
+            description     = #{description},
+            department_exam = #{departmentExam},
+            lab_exam        = #{labExam},
+            medical_exam    = #{medicalExam},
+            other_exam      = #{otherExam},
+            cover_image     = #{coverImage},
+            original_price  = #{originalPrice},
+            current_price   = #{currentPrice},
+            package_type    = #{packageType},
+            tags            = #{tags},
+            category_id     = #{categoryId},
+            promotion_id    = #{promotionId},
+            status          = 0,
+            md5_hash        = #{md5Hash}
+        WHERE id = #{id}
+    </update>
+    <select id="selectEntityById" resultType="MedExamPackageEntity">
+        select * from med_exam_package where id = #{id}
+    </select>
+
+    <update id="updateExamItems">
+        update med_exam_package
+        set exam_items = #{examItems},
+            md5_hash=#{md5Hash}
+        where id = #{id}
+    </update>
+    <update id="updateStatus">
+        update med_exam_package
+        set status = #{status}
+        where id = #{id}
+    </update>
+    <select id="selectImagesByIds" resultType="String">
+        select cover_image from med_exam_package where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <delete id="deleteByIds">
+        delete from med_exam_package where status= 0 and sales_volume = 0 and id in
+        <foreach collection="array" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

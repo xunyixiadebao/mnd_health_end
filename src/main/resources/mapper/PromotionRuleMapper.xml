@@ -3,5 +3,8 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.example.djiankang.db.mapper.PromotionRuleMapper">
-
+    <select id="selectAll" resultType="java.util.Map">
+        select rule_id as ruleId, rule_name as ruleName
+        from promotion_rule;
+    </select>
 </mapper>

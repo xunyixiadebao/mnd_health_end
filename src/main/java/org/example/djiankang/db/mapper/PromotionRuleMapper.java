@@ -1,6 +1,7 @@
 package org.example.djiankang.db.mapper;
 
-import org.example.djiankang.db.entity.PromotionRuleEntity;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @author zl
@@ -10,6 +11,11 @@ import org.example.djiankang.db.entity.PromotionRuleEntity;
 */
 public interface PromotionRuleMapper {
 
+    /**
+     * 查询所有的促销规则
+     * @return 规则列表
+     */
+    List<Map<String, Object>> selectAll();
 }
 
 
