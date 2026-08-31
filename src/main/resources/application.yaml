@@ -55,11 +55,11 @@ server:
   servlet:
     context-path: /api
 
-  ssl:
-    enabled: true
-    key-store-type: PKCS12
-    key-store: classpath:keystore.p12
-    key-store-password: 123456
+#  ssl:
+#    enabled: true
+#    key-store-type: PKCS12
+#    key-store: classpath:keystore.p12
+#    key-store-password: 123456
 
 
 mybatis:
@@ -106,3 +106,15 @@ logging:
     org.example.djiankang.db.mapper: warn
   pattern:
     console: "%d{yyyy/MM/dd HH:mm:ss}  %-5level  %msg%n"
+
+wechat:
+  pay:
+    v3:
+      mnd-health:
+        mch-id: 1631833859
+        merchant-serial-no: 4AE80B52EBEAB2B96F68E02510A42801E952E889
+        private-key-path: D:\BaiduNetdiskDownload\code\code\apiclient_key.pem
+        app-v3-secret: 84dba6dd51cdaf779e55bcabae564b53
+        app-id: wxcc651fcbab275e33
+        notify-url: https://ed35fa9a.natappfree.cc
+        refund-notify-url: http://your-domain/api/front/order/refund/notify
