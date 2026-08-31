@@ -3,6 +3,32 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.example.djiankang.db.mapper.CrmCustomerMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into crm_customer
+            (customer_name, gender, phone, photo_url, register_time)
+        values
+            (#{customerName}, #{gender}, #{phone}, #{photoUrl}, now())
+    </insert>
 
-
+    <select id="findIdByPhone" resultType="java.lang.Integer">
+        select id
+        from crm_customer
+        where phone = #{phone} limit 1
+    </select>
+    <select id="selectById" resultType="Map">
+        select customer_name                          as customerName,
+               gender,
+               phone,
+               photo_url                              as photoUrl,
+               date_format(register_time, '%Y-%m-%d') as registerTime
+        from crm_customer
+        where id = #{id} limit 1
+    </select>
+    <update id="update" parameterType="Map">
+        update crm_customer
+        set customer_name = #{customerName},
+            gender        = #{gender},
+            phone         = #{phone}
+        where id = #{id}
+    </update>
 </mapper>

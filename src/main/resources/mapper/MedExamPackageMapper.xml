@@ -181,4 +181,163 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="selectTop4ByCategoryId" resultType="Map">
+        (select id,
+                package_code   as packageCode,
+                cover_image    as coverImage,
+                package_name   as packageName,
+                description,
+                current_price  as currentPrice,
+                original_price as originalPrice,
+                sales_volume   as salesVolume,
+                category_id
+         from med_exam_package
+         where status = 1
+           and category_id = #{categoryId1}
+         order by sales_volume desc, id desc limit 4)
+        union all
+        (select id,
+                package_code   as packageCode,
+                cover_image    as coverImage,
+                package_name   as packageName,
+                description,
+                current_price  as currentPrice,
+                original_price as originalPrice,
+                sales_volume   as salesVolume,
+                category_id
+         from med_exam_package
+         where status = 1
+           and category_id = #{categoryId2}
+         order by sales_volume desc, id desc limit 4)
+        union all
+        (select id,
+                package_code   as packageCode,
+                cover_image    as coverImage,
+                package_name   as packageName,
+                description,
+                current_price  as currentPrice,
+                original_price as originalPrice,
+                sales_volume   as salesVolume,
+                category_id
+         from med_exam_package
+         where status = 1
+           and category_id = #{categoryId3}
+         order by sales_volume desc, id desc limit 4)
+    </select>
+    <select id="selectPageListForFront" resultType="java.util.Map">
+        select id,
+        package_code as packageCode,
+        package_name as packageName,
+        description,
+        cover_image as coverImage,
+        original_price as originalPrice,
+        current_price as currentPrice,
+        sales_volume as salesVolume
+        from med_exam_package
+        where status = 1
+        <if test="keyword != null and keyword != ''">
+            and ( package_name like concat("%",#{keyword},"%") or
+            package_code like concat("%",#{keyword},"%")
+            )
+        </if>
+        <if test="packageType != null and packageType != ''">
+            and package_type = #{packageType}
+        </if>
+        <if test="sex != null and sex != ''">
+            and JSON_CONTAINS (tags, CONCAT('"',#{sex},'"'))
+        </if>
+        <choose>
+            <when test="priceType == 1">
+                and current_price &gt;= 0 and current_price &lt; 100
+            </when>
+            <when test="priceType == 2">
+                and current_price &gt;= 100 and current_price &lt; 500
+            </when>
+            <when test="priceType == 3">
+                and current_price &gt;= 500 and current_price &lt; 1000
+            </when>
+            <when test="priceType == 4">
+                and current_price &gt;= 1000
+            </when>
+        </choose>
+        <choose>
+            <when test="orderType == 1">
+                order by id desc
+            </when>
+            <when test="orderType == 2">
+                order by sales_volume desc
+            </when>
+            <when test="orderType == 3">
+                order by current_price asc
+            </when>
+            <when test="orderType == 4">
+                order by current_price desc
+            </when>
+            <otherwise>
+                order by sales_volume desc, id desc
+            </otherwise>
+        </choose>
+        limit #{startIndex}, #{pageSize}
+    </select>
+
+    <select id="selectPageCountForFront" resultType="Long">
+        select count(*)
+        from med_exam_package
+        where status = 1
+        <if test="keyword != null and keyword != ''">
+            and ( package_name like concat("%",#{keyword},"%") or
+            package_code like concat("%",#{keyword},"%")
+            )
+        </if>
+        <if test="packageType != null and packageType != ''">
+            and package_type = #{packageType}
+        </if>
+        <if test="sex != null and sex != ''">
+            and JSON_CONTAINS (tags, CONCAT('"',#{sex},'"'))
+        </if>
+        <choose>
+            <when test="priceType == 1">
+                and current_price &gt;= 0 and current_price &lt; 100
+            </when>
+            <when test="priceType == 2">
+                and current_price &gt;= 100 and current_price &lt; 500
+            </when>
+            <when test="priceType == 3">
+                and current_price &gt;= 500 and current_price &lt; 1000
+            </when>
+            <when test="priceType == 4">
+                and current_price &gt;= 1000
+            </when>
+        </choose>
+    </select>
+    <select id="selectPackageWithPromotionForOrder" resultType="java.util.Map">
+        select p.package_code                 as packageCode,
+               p.package_name                 as packageName,
+               p.description,
+               p.department_exam              as departmentExam,
+               p.lab_exam                     as labExam,
+               p.medical_exam                 as medicalExam,
+               p.other_exam                   as otherExam,
+               p.exam_items                   as examItems,
+               p.cover_image                  as coverImage,
+               cast(p.original_price as char) as originalPrice, -- 为什么要转换成字符串，防止损失精度
+               cast(p.current_price as char)  as currentPrice,
+               p.package_type                 as packageType,
+               p.tags,
+               p.md5_hash                     as md5Hash,
+               r.rule_content                 as ruleContent,
+               r.rule_name                    as ruleName
+        from med_exam_package p
+        left join
+             promotion_rule r
+        on
+            p.promotion_id = r.rule_id
+        where p.id = #{id}
+    </select>
+    <update id="updateSalesVolume">
+        update med_exam_package
+        set sales_volume = sales_volume + #{quantity}
+        where id = #{goodsId}
+    </update>
 </mapper>

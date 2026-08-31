@@ -94,6 +94,38 @@ public interface MedExamPackageMapper {
      * @return 删除套餐的个数
      */
     int deleteByIds(Integer[] ids);
+
+    /**
+     * 查询指定分区下销量排名前4的套餐数据
+     *
+     * @param categoryId1 分区id1
+     * @param categoryId2 分区id2
+     * @param categoryId3 分区id3
+     * @return 套餐列表
+     */
+    List<Map<String, Object>> selectTop4ByCategoryId(@Param("categoryId1") Integer categoryId1,
+                                                     @Param("categoryId2") Integer categoryId2,
+                                                     @Param("categoryId3") Integer categoryId3);
+
+    List<Map<String, Object>> selectPageListForFront(Map<String, Object> params);
+
+    long selectPageCountForFront(Map<String, Object> params);
+    /**
+     * 查询商品信息及促销规则（用于创建订单）
+     *
+     * @param id 商品id
+     * @return 商品信息及促销规则
+     */
+    Map<String, Object> selectPackageWithPromotionForOrder(Integer id);
+
+    /**
+     * 更新商品销量
+     *
+     * @param goodsId  商品id
+     * @param quantity 售卖数量
+     * @return 1表示更新成功
+     */
+    int updateSalesVolume(@Param("goodsId") Integer goodsId, @Param("quantity") Integer quantity);
 }
 
 
